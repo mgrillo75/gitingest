@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+import traceback
 
 from utils.parse_url import parse_url
 from process_query import process_query
@@ -24,17 +25,17 @@ async def home(request: Request):
 
 @router.post("/", response_class=HTMLResponse)
 async def index_post(request: Request, input_text: str = Form(...)):
-
     try:
         parsed_url = parse_url(input_text)
         summary, tree, content = await process_query(parsed_url)
     except Exception as e:
-        print(e)
+        error_details = traceback.format_exc()
+        print(f"Error details:\n{error_details}")
         return templates.TemplateResponse(
             "index.html", 
             {
                 "request": request,
-                "error_message": f"Error: {e}",
+                "error_message": str(e),
                 "examples": EXAMPLE_REPOS
             }
         )
